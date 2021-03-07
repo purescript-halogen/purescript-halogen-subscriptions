@@ -1,0 +1,12 @@
+.*
+!.gitignore
+!.github
+!.editorconfig
+
+output
+generated-docs
+bower_components
+node_modules
+
+package-lock.json
+*.lock
