@@ -1,7 +1,7 @@
 # Halogen Subscriptions
 
-[![CI](https://github.com/purescript-contrib/purescript-halogen-subscriptions/workflows/CI/badge.svg?branch=main)](https://github.com/purescript-contrib/purescript-halogen-subscriptions/actions?query=workflow%3ACI+branch%3Amain)
-[![Release](https://img.shields.io/github/release/purescript-contrib/purescript-halogen-subscriptions.svg)](https://github.com/purescript-contrib/purescript-halogen-subscriptions/releases)
+[![CI](https://github.com/purescript-halogen/purescript-halogen-subscriptions/workflows/CI/badge.svg?branch=main)](https://github.com/purescript-halogen/purescript-halogen-subscriptions/actions?query=workflow%3ACI+branch%3Amain)
+[![Release](https://img.shields.io/github/release/purescript-halogen/purescript-halogen-subscriptions.svg)](https://github.com/purescript-halogen/purescript-halogen-subscriptions/releases)
 [![Pursuit](https://pursuit.purescript.org/packages/purescript-halogen-subscriptions/badge)](https://pursuit.purescript.org/packages/purescript-halogen-subscriptions)
 [![Maintainer: garyb](https://img.shields.io/badge/maintainer-garyb-teal.svg)](https://github.com/garyb)
 [![Maintainer: thomashoneyman](https://img.shields.io/badge/maintainer-thomashoneyman-teal.svg)](https://github.com/thomashoneyman)
@@ -30,14 +30,14 @@ The quick start hasn't been written yet (contributions are welcome!). The quick 
 
 If you get stuck, there are several ways to get help:
 
-- [Open an issue](https://github.com/purescript-contrib/purescript-halogen-subscriptions/issues) if you have encountered a bug or problem.
+- [Open an issue](https://github.com/purescript-halogen/purescript-halogen-subscriptions/issues) if you have encountered a bug or problem.
 - [Search or start a thread on the PureScript Discourse](https://discourse.purescript.org) if you have general questions. You can also ask questions in the `#purescript` and `#purescript-beginners` channels on the [Functional Programming Slack](https://functionalprogramming.slack.com) ([invite link](https://fpchat-invite.herokuapp.com/)).
 
 ## Contributing
 
 You can contribute to `halogen-subscriptions` in several ways:
 
-1. If you encounter a problem or have a question, please [open an issue](https://github.com/purescript-contrib/purescript-halogen-subscriptions/issues). We'll do our best to work with you to resolve or answer it.
+1. If you encounter a problem or have a question, please [open an issue](https://github.com/purescript-halogen/purescript-halogen-subscriptions/issues). We'll do our best to work with you to resolve or answer it.
 
 2. If you would like to contribute code, tests, or documentation, please [read the contributor guide](./CONTRIBUTING.md). It's a short, helpful introduction to contributing to this library, including development instructions.
 
