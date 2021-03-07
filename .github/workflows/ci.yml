@@ -24,14 +24,10 @@ jobs:
             output
 
       - name: Install dependencies
-        run: |
-          bower install
-          spago install
+        run: spago install
 
       - name: Build source
-        run: |
-          pulp build
-          spago build --no-install --purs-args '--censor-lib --strict'
+        run: spago build --no-install --purs-args '--censor-lib --strict'
 
       - name: Run tests
-        run: spago test --no-install
+        run: spago -x test/test.dhall test --no-install
