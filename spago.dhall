@@ -1,4 +1,4 @@
-{ name = "halogen-emitter"
+{ name = "halogen-subscriptions"
 , dependencies =
   [ "arrays"
   , "effect"

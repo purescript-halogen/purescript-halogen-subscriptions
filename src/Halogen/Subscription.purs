@@ -1,9 +1,9 @@
-module Halogen.Emitter
-  ( EmitIO(..)
+module Halogen.Subscription
+  ( SubscribeIO(..)
+  , create
   , Listener
   , notify
   , Emitter
-  , create
   , makeEmitter
   , Subscription
   , subscribe
@@ -20,36 +20,35 @@ import Effect.Ref as Ref
 import Safe.Coerce (coerce)
 import Unsafe.Reference (unsafeRefEq)
 
-type EmitIO a =
+type SubscribeIO a =
   { listener :: Listener a
   , emitter :: Emitter a
   }
+
+create :: forall a. Effect (SubscribeIO a)
+create = do
+  subscribers <- Ref.new []
+  pure
+    { emitter: Emitter \k -> do
+        Ref.modify_ (_ <> [k]) subscribers
+        pure $ Subscription do
+          Ref.modify_ (deleteBy unsafeRefEq k) subscribers
+    , listener: Listener \a -> do
+        Ref.read subscribers >>= traverse_ \k -> k a
+    }
 
 newtype Listener a = Listener (a -> Effect Unit)
 
 instance contravariantListener :: Contravariant Listener where
   cmap f (Listener g) = Listener (g <<< f)
 
-notify :: forall a. a -> Listener a -> Effect Unit
-notify a (Listener f) = f a
+notify :: forall a. Listener a -> a -> Effect Unit
+notify (Listener f) a = f a
 
 newtype Emitter a = Emitter ((a -> Effect Unit) -> Effect Subscription)
 
 instance functorEmitter :: Functor Emitter where
   map f (Emitter e) = Emitter \k -> e (k <<< f)
-
-create :: forall a. Effect (EmitIO a)
-create = do
-  subscribers <- Ref.new []
-  pure
-    { emitter: Emitter \k -> do
-        _ <- Ref.modify (_ <> [k]) subscribers
-        pure $ Subscription do
-          _ <- Ref.modify (deleteBy unsafeRefEq k) subscribers
-          pure unit
-    , listener: Listener \a -> do
-        Ref.read subscribers >>= traverse_ \k -> k a
-    }
 
 makeEmitter
   :: forall a
