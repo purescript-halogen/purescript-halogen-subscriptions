@@ -1,5 +1,13 @@
 { name = "halogen-emitter"
-, dependencies = [ "effect" ]
+, dependencies =
+  [ "arrays"
+  , "effect"
+  , "foldable-traversable"
+  , "functors"
+  , "refs"
+  , "safe-coerce"
+  , "unsafe-reference"
+  ]
 , packages = ./packages.dhall
-, sources = [ "src/**/*.purs", "test/**/*.purs" ]
+, sources = [ "src/**/*.purs" ]
 }
