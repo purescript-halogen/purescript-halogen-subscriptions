@@ -9,6 +9,11 @@ module Halogen.Subscription
   , Subscription
   , subscribe
   , unsubscribe
+  , fold
+  , filter
+  , sampleOn
+  , keepLatest
+  , fix
   ) where
 
 import Prelude
@@ -18,12 +23,16 @@ import Control.Alternative (class Alternative)
 import Control.Apply (lift2)
 import Control.Plus (class Plus)
 import Data.Array (deleteBy)
+import Data.Compactable (class Compactable)
+import Data.Either (either, hush, isLeft, isRight)
+import Data.Filterable (class Filterable, filterMap)
 import Data.Foldable (sequence_, traverse_)
 import Data.Functor.Contravariant (class Contravariant)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromJust, isJust)
 import Effect (Effect)
 import Effect.Ref as Ref
 import Effect.Unsafe (unsafePerformEffect)
+import Partial.Unsafe (unsafeCrashWith, unsafePartial)
 import Safe.Coerce (coerce)
 import Unsafe.Reference (unsafeRefEq)
 
@@ -105,7 +114,23 @@ instance semigroupEmitter :: Semigroup a => Semigroup (Emitter a) where
   append = lift2 append
 
 instance monoidEmitter :: Monoid a => Monoid (Emitter a) where
-  mempty = pure mempty
+  mempty = Emitter mempty
+
+instance compactableEmitter :: Compactable Emitter where
+  compact xs = map (\x -> unsafePartial fromJust x) (filter isJust xs)
+  separate xs =
+    { left: map (either identity (\_ -> unsafeCrashWith "Expected Left")) (filter isLeft xs)
+    , right: map (either (\_ -> unsafeCrashWith "Expected Right") identity) (filter isRight xs)
+    }
+
+instance filterableEmitter :: Filterable Emitter where
+  filter = filter
+  filterMap f = map (\x -> unsafePartial fromJust x) <<< filter isJust <<< map f
+  partition p xs = { yes: filter p xs, no: filter (not <<< p) xs }
+  partitionMap f xs =
+    { left: filterMap (either Just (const Nothing) <<< f) xs
+    , right: filterMap (hush <<< f) xs
+    }
 
 -- | Make an `Emitter` from a function which accepts a callback and returns an
 -- | unsubscription function.
