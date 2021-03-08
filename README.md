@@ -6,7 +6,7 @@
 [![Maintainer: garyb](https://img.shields.io/badge/maintainer-garyb-teal.svg)](https://github.com/garyb)
 [![Maintainer: thomashoneyman](https://img.shields.io/badge/maintainer-thomashoneyman-teal.svg)](https://github.com/thomashoneyman)
 
-The library summary hasn't been written yet (contributions are welcome!). The library summary describes the library's purpose in one to three sentences.
+Utilities for creating and managing push/pull subscriptions, inspired by the [event](https://github.com/paf31/purescript-event) library. This library is used to implement subscriptions in [Halogen](https://github.com/purescript-halogen/purescript-halogen), but it can be used independently of Halogen.
 
 ## Installation
 
