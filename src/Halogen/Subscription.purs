@@ -13,11 +13,17 @@ module Halogen.Subscription
 
 import Prelude
 
+import Control.Alt (class Alt)
+import Control.Alternative (class Alternative)
+import Control.Apply (lift2)
+import Control.Plus (class Plus)
 import Data.Array (deleteBy)
-import Data.Foldable (traverse_)
+import Data.Foldable (sequence_, traverse_)
 import Data.Functor.Contravariant (class Contravariant)
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Ref as Ref
+import Effect.Unsafe (unsafePerformEffect)
 import Safe.Coerce (coerce)
 import Unsafe.Reference (unsafeRefEq)
 
@@ -66,6 +72,40 @@ newtype Emitter a = Emitter ((a -> Effect Unit) -> Effect Subscription)
 
 instance functorEmitter :: Functor Emitter where
   map f (Emitter e) = Emitter \k -> e (k <<< f)
+
+instance applyEmitter :: Apply Emitter where
+  apply (Emitter e1) (Emitter e2) = Emitter \k -> do
+    latestA <- Ref.new Nothing
+    latestB <- Ref.new Nothing
+    Subscription c1 <- e1 \a -> do
+      Ref.write (Just a) latestA
+      Ref.read latestB >>= traverse_ (k <<< a)
+    Subscription c2 <- e2 \b -> do
+      Ref.write (Just b) latestB
+      Ref.read latestA >>= traverse_ (k <<< (_ $ b))
+    pure (Subscription (c1 *> c2))
+
+instance applicativeEmitter :: Applicative Emitter where
+  pure a = Emitter \k -> do
+    k a
+    pure (Subscription (pure unit))
+
+instance altEmitter :: Alt Emitter where
+  alt (Emitter f) (Emitter g) = Emitter \k -> do
+    Subscription c1 <- f k
+    Subscription c2 <- g k
+    pure (Subscription (c1 *> c2))
+
+instance plusEmitter :: Plus Emitter where
+  empty = Emitter \_ -> pure (Subscription (pure unit))
+
+instance alternativeEmitter :: Alternative Emitter
+
+instance semigroupEmitter :: Semigroup a => Semigroup (Emitter a) where
+  append = lift2 append
+
+instance monoidEmitter :: Monoid a => Monoid (Emitter a) where
+  mempty = pure mempty
 
 -- | Make an `Emitter` from a function which accepts a callback and returns an
 -- | unsubscription function.
@@ -128,3 +168,47 @@ subscribe (Emitter e) k = e (void <<< k)
 -- | End a subscription to an `Emitter`.
 unsubscribe :: Subscription -> Effect Unit
 unsubscribe (Subscription unsub) = unsub
+
+-- | Fold over values received from some `Emitter`, creating a new `Emitter`.
+fold :: forall a b. (a -> b -> b) -> Emitter a -> b -> Emitter b
+fold f (Emitter e) b = Emitter \k -> do
+  result <- Ref.new b
+  e \a -> Ref.modify (f a) result >>= k
+
+-- | Create an `Emitter` which only fires when a predicate holds.
+filter :: forall a. (a -> Boolean) -> Emitter a -> Emitter a
+filter p (Emitter e) = Emitter \k -> e \a -> if p a then k a else pure unit
+
+-- | Create an `Emitter` which samples the latest values from the first emitter
+-- | at the times when the second emitter fires.
+sampleOn :: forall a b. Emitter a -> Emitter (a -> b) -> Emitter b
+sampleOn (Emitter e1) (Emitter e2) = Emitter \k -> do
+  latest <- Ref.new Nothing
+  Subscription c1 <- e1 \a -> do
+    Ref.write (Just a) latest
+  Subscription c2 <- e2 \f -> do
+    Ref.read latest >>= traverse_ (k <<< f)
+  pure (Subscription (c1 *> c2))
+
+-- | Flatten a nested `Emitter`, reporting values only from the most recent
+-- | inner `Emitter`.
+keepLatest :: forall a. Emitter (Emitter a) -> Emitter a
+keepLatest (Emitter e) = Emitter \k -> do
+  cancelInner <- Ref.new Nothing
+  Subscription cancelOuter <- e \inner -> do
+    Ref.read cancelInner >>= sequence_
+    Subscription c <- subscribe inner k
+    Ref.write (Just c) cancelInner
+  pure $ Subscription do
+    Ref.read cancelInner >>= sequence_
+    cancelOuter
+
+-- | Compute a fixed point.
+fix :: forall i o. (Emitter i -> { input :: Emitter i, output :: Emitter o }) -> Emitter o
+fix f = Emitter \k -> do
+  Subscription c1 <- subscribe input (notify listener)
+  Subscription c2 <- subscribe output k
+  pure (Subscription (c1 *> c2))
+  where
+  { emitter, listener } = unsafePerformEffect create
+  { input, output } = f emitter

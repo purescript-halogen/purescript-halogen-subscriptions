@@ -2,7 +2,6 @@
 , dependencies =
   [ "arrays"
   , "effect"
-  , "filterable"
   , "foldable-traversable"
   , "functors"
   , "refs"
