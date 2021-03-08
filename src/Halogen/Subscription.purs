@@ -1,4 +1,3 @@
--- | Functions and instances for creating and managing push/pull subscriptions.
 module Halogen.Subscription
   ( SubscribeIO(..)
   , create
@@ -36,8 +35,8 @@ type SubscribeIO a =
   , emitter :: Emitter a
   }
 
--- | Create a paired `Listener` and `Emitter`, which can then be used with the
--- | functions and instances in this package.
+-- | Create a paired `Listener` and `Emitter`, where you can push values to
+-- | the listener and subscribe to values from the emitter.
 -- |
 -- | ```purs
 -- | { emitter, listener } <- create
