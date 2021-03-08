@@ -11,8 +11,6 @@ module Halogen.Subscription
   , unsubscribe
   , fold
   , filter
-  , sampleOn
-  , keepLatest
   , fix
   ) where
 
@@ -23,16 +21,12 @@ import Control.Alternative (class Alternative)
 import Control.Apply (lift2)
 import Control.Plus (class Plus)
 import Data.Array (deleteBy)
-import Data.Compactable (class Compactable)
-import Data.Either (either, hush, isLeft, isRight)
-import Data.Filterable (class Filterable, filterMap)
-import Data.Foldable (sequence_, traverse_)
+import Data.Foldable (traverse_)
 import Data.Functor.Contravariant (class Contravariant)
-import Data.Maybe (Maybe(..), fromJust, isJust)
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Ref as Ref
 import Effect.Unsafe (unsafePerformEffect)
-import Partial.Unsafe (unsafeCrashWith, unsafePartial)
 import Safe.Coerce (coerce)
 import Unsafe.Reference (unsafeRefEq)
 
@@ -116,22 +110,6 @@ instance semigroupEmitter :: Semigroup a => Semigroup (Emitter a) where
 instance monoidEmitter :: Monoid a => Monoid (Emitter a) where
   mempty = Emitter mempty
 
-instance compactableEmitter :: Compactable Emitter where
-  compact xs = map (\x -> unsafePartial fromJust x) (filter isJust xs)
-  separate xs =
-    { left: map (either identity (\_ -> unsafeCrashWith "Expected Left")) (filter isLeft xs)
-    , right: map (either (\_ -> unsafeCrashWith "Expected Right") identity) (filter isRight xs)
-    }
-
-instance filterableEmitter :: Filterable Emitter where
-  filter = filter
-  filterMap f = map (\x -> unsafePartial fromJust x) <<< filter isJust <<< map f
-  partition p xs = { yes: filter p xs, no: filter (not <<< p) xs }
-  partitionMap f xs =
-    { left: filterMap (either Just (const Nothing) <<< f) xs
-    , right: filterMap (hush <<< f) xs
-    }
-
 -- | Make an `Emitter` from a function which accepts a callback and returns an
 -- | unsubscription function.
 -- |
@@ -203,30 +181,6 @@ fold f (Emitter e) b = Emitter \k -> do
 -- | Create an `Emitter` which only fires when a predicate holds.
 filter :: forall a. (a -> Boolean) -> Emitter a -> Emitter a
 filter p (Emitter e) = Emitter \k -> e \a -> if p a then k a else pure unit
-
--- | Create an `Emitter` which samples the latest values from the first emitter
--- | at the times when the second emitter fires.
-sampleOn :: forall a b. Emitter a -> Emitter (a -> b) -> Emitter b
-sampleOn (Emitter e1) (Emitter e2) = Emitter \k -> do
-  latest <- Ref.new Nothing
-  Subscription c1 <- e1 \a -> do
-    Ref.write (Just a) latest
-  Subscription c2 <- e2 \f -> do
-    Ref.read latest >>= traverse_ (k <<< f)
-  pure (Subscription (c1 *> c2))
-
--- | Flatten a nested `Emitter`, reporting values only from the most recent
--- | inner `Emitter`.
-keepLatest :: forall a. Emitter (Emitter a) -> Emitter a
-keepLatest (Emitter e) = Emitter \k -> do
-  cancelInner <- Ref.new Nothing
-  Subscription cancelOuter <- e \inner -> do
-    Ref.read cancelInner >>= sequence_
-    Subscription c <- subscribe inner k
-    Ref.write (Just c) cancelInner
-  pure $ Subscription do
-    Ref.read cancelInner >>= sequence_
-    cancelOuter
 
 -- | Compute a fixed point.
 fix :: forall i o. (Emitter i -> { input :: Emitter i, output :: Emitter o }) -> Emitter o
