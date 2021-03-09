@@ -6,7 +6,7 @@
 [![Maintainer: garyb](https://img.shields.io/badge/maintainer-garyb-teal.svg)](https://github.com/garyb)
 [![Maintainer: thomashoneyman](https://img.shields.io/badge/maintainer-thomashoneyman-teal.svg)](https://github.com/thomashoneyman)
 
-The library summary hasn't been written yet (contributions are welcome!). The library summary describes the library's purpose in one to three sentences.
+Utilities for creating and managing push-based subscriptions, inspired by the [event](https://github.com/paf31/purescript-event) library. This library is used to implement subscriptions in [Halogen](https://github.com/purescript-halogen/purescript-halogen), but it can be used independently of Halogen.
 
 ## Installation
 
@@ -18,27 +18,38 @@ spago install halogen-subscriptions
 
 ## Quick start
 
-The quick start hasn't been written yet (contributions are welcome!). The quick start covers a common, minimal use case for the library, whereas longer examples and tutorials are kept in the [docs directory](./docs).
+The `halogen-subscriptions` library helps you create and transform push-based subscriptions. Most subscriptions follow this pattern:
+
+1. Use the `create` function to produce a paired `Emitter` and `Listener`. An emitter is a possibly-infinite list of values that you can subscribe to, and a listener is a mechanism for pushing values to the emitter.
+2. Use the `subscribe` function to subscribe to outputs from the emitter by providing a callback function to run each time a value is emitted.
+3. Use the `notify` function to push values to the emitter via the listener.
+4. Use the `unsubscribe` function to end a subscription to an emitter.
+
+Here's a simple example that logs "Hello" and then "Goodbye":
+
+```purs
+module Main where
+
+import Prelude
+
+import Effect (Effect)
+import Effect.Console as Console
+import Halogen.Subscription as HS
+
+main :: Effect Unit
+main = do
+  { emitter, listener } <- HS.create
+
+  subscription <- HS.subscribe emitter \str -> Console.log str
+
+  HS.notify listener "Hello"
+  HS.notify listener "Goodbye!"
+
+  HS.unsubscribe subscription
+```
+
+Emitters can be combined and transformed to make more sophisticated subscriptions.
 
 ## Documentation
 
-`halogen-subscriptions` documentation is stored in a few places:
-
-1. Module documentation is [published on Pursuit](https://pursuit.purescript.org/packages/purescript-halogen-subscriptions).
-2. Written documentation is kept in the [docs directory](./docs).
-3. Usage examples can be found in [the test suite](./test).
-
-If you get stuck, there are several ways to get help:
-
-- [Open an issue](https://github.com/purescript-halogen/purescript-halogen-subscriptions/issues) if you have encountered a bug or problem.
-- [Search or start a thread on the PureScript Discourse](https://discourse.purescript.org) if you have general questions. You can also ask questions in the `#purescript` and `#purescript-beginners` channels on the [Functional Programming Slack](https://functionalprogramming.slack.com) ([invite link](https://fpchat-invite.herokuapp.com/)).
-
-## Contributing
-
-You can contribute to `halogen-subscriptions` in several ways:
-
-1. If you encounter a problem or have a question, please [open an issue](https://github.com/purescript-halogen/purescript-halogen-subscriptions/issues). We'll do our best to work with you to resolve or answer it.
-
-2. If you would like to contribute code, tests, or documentation, please [read the contributor guide](./CONTRIBUTING.md). It's a short, helpful introduction to contributing to this library, including development instructions.
-
-3. If you have written a library, tutorial, guide, or other resource based on this package, please share it on the [PureScript Discourse](https://discourse.purescript.org)! Writing libraries and learning resources are a great way to help this library succeed.
+Module documentation is [published on Pursuit](https://pursuit.purescript.org/packages/purescript-halogen-subscriptions).
