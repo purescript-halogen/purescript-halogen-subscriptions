@@ -6,7 +6,7 @@
 [![Maintainer: garyb](https://img.shields.io/badge/maintainer-garyb-teal.svg)](https://github.com/garyb)
 [![Maintainer: thomashoneyman](https://img.shields.io/badge/maintainer-thomashoneyman-teal.svg)](https://github.com/thomashoneyman)
 
-Utilities for creating and managing push/pull subscriptions, inspired by the [event](https://github.com/paf31/purescript-event) library. This library is used to implement subscriptions in [Halogen](https://github.com/purescript-halogen/purescript-halogen), but it can be used independently of Halogen.
+Utilities for creating and managing push-based subscriptions, inspired by the [event](https://github.com/paf31/purescript-event) library. This library is used to implement subscriptions in [Halogen](https://github.com/purescript-halogen/purescript-halogen), but it can be used independently of Halogen.
 
 ## Installation
 
@@ -18,7 +18,7 @@ spago install halogen-subscriptions
 
 ## Quick start
 
-The `halogen-subscriptions` library helps you create, transform, and end push/pull subscriptions. Most subscriptions follow this pattern:
+The `halogen-subscriptions` library helps you create and transform push-based subscriptions. Most subscriptions follow this pattern:
 
 1. Use the `create` function to produce a paired `Emitter` and `Listener`. An emitter is a possibly-infinite list of values that you can subscribe to, and a listener is a mechanism for pushing values to the emitter.
 2. Use the `subscribe` function to subscribe to outputs from the emitter by providing a callback function to run each time a value is emitted.
