@@ -147,7 +147,8 @@ derive newtype instance semigroupSubscription :: Semigroup Subscription
 derive newtype instance monoidSubscription :: Monoid Subscription
 
 -- | Subscribe to an `Emitter` by providing a callback to run on values produced
--- | by the emitter:
+-- | by the emitter. Not to be confused with the `subscribe` function from the
+-- | regular `Halogen` module!
 -- |
 -- | ```purs
 -- | -- Produce an emitter / listener pair with `create`:
