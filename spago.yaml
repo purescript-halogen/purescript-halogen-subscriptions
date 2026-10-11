@@ -1,0 +1,30 @@
+package:
+  name: halogen-subscriptions
+  description: Utilities for creating and managing push-based subscriptions
+  publish:
+    version: 2.0.1
+    license: Apache-2.0
+    location:
+      githubOwner: purescript-halogen
+      githubRepo: purescript-halogen-subscriptions
+  build:
+    strict: true
+  dependencies:
+    - arrays: ">=7.0.0 <8.0.0"
+    - contravariant: ">=6.0.0 <7.0.0"
+    - control: ">=6.0.0 <7.0.0"
+    - effect: ">=4.0.0 <5.0.0"
+    - foldable-traversable: ">=6.0.0 <7.0.0"
+    - maybe: ">=6.0.0 <7.0.0"
+    - prelude: ">=6.0.0 <7.0.0"
+    - refs: ">=6.0.0 <7.0.0"
+    - safe-coerce: ">=2.0.0 <3.0.0"
+    - unsafe-reference: ">=5.0.0 <6.0.0"
+  test:
+    main: Test.Main
+    dependencies:
+      - assert
+      - console
+workspace:
+  packageSet:
+    registry: 81.4.0
