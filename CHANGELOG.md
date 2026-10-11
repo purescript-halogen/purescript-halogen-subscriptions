@@ -12,6 +12,12 @@ Bugfixes:
 
 Other improvements:
 
+## [v2.0.1](https://github.com/purescript-halogen/purescript-halogen-subscriptions/releases/tag/v2.0.1) - 2026-10-11
+
+- Migrate to registry-backed Spago 1.0, preserving published dependency ranges.
+- Update repository tooling and CI actions.
+- Clarify the distinction between subscription functions in the documentation.
+
 ## [v1.0.0](https://github.com/purescript-halogen/purescript-halogen/releases/tag/v1.0.0) - 2021-03-08
 
 - Initial release of the `halogen-subscriptions` library
